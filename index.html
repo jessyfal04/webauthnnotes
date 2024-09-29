@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="lib/bulma.min.css">
+	<link rel="stylesheet" href="lib/style.css">
+
+	<script src="lib/jquery.min.js"></script>
+	<script src="lib/script.js"></script>
+
+	<link rel="shortcut icon" href="lib/icon.png" type="image/x-icon">
+	<title>WebAuthn Notes</title>
+</head>
+<body>
+
+	<!-- Header -->
+	<section class="hero is-info">
+		<div class="hero-body">
+			<p class="title">
+			Welcome to the WebAuthn Notes
+			</p>
+			<p class="subtitle">
+			You can create notes an protect them with WebAuthn
+			</p>
+		</div>
+	</section>
+
+	<!-- Alert Box -->
+	<br>
+	<div id="messages" style="position:sticky; top:0px; z-index:10;"></div>
+	<br>
+
+	<div class="columns">
+		<div class="column is-5 mx-4">
+			<div class="box">
+				<div class="block">
+					<h2 class="title is-2">Account</h2>
+
+					<div class="field">
+						<label class="label" for="username">Username</label>
+						<div class="control">
+						  <input class="input" type="text" id="username" placeholder="e.g yepssy" onchange="loginOrRegister()" oninput="disableLoginRegister()">
+						</div>
+					</div>
+
+					<button class="button is-success" id="login-button" onclick="login()" disabled>Login</button>
+					<button class="button is-success" id="register-button" onclick="register()" disabled>Register</button>
+					<button class="button is-danger" id="logout-button" onclick="logout()">Logout</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="column is-auto mx-4">
+			<div class="box">
+				<h2 class="title is-2">Notes</h2>
+
+				<div class="block">
+					<textarea id="noteTextArea" class="textarea is-success" placeholder="e.g. Hello world" onchange="noteChange()" oninput="noteInput()"></textarea>
+				</div>
+			</div>
+		</div>
+	</div>	
+
+	<!-- Footer -->
+	<footer class="footer">
+		<div class="content has-text-centered">
+			<p>
+				<strong>WebAuthn Notes</strong> by Jessy FALLAVIER (jessyfal04). License : <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+				<br>
+				<a href="https://www.flaticon.com/free-icons/secret" title="secret icons">Secret icons created by Smashicons - Flaticon</a>
+			</p>
+		</div>
+	</footer>
+	
+</body>
+</html>
