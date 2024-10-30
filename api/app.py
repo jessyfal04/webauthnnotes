@@ -1,16 +1,18 @@
-import base64
 from flask import Flask, jsonify, request, session
 import sqlite3
-from webauthn import generate_registration_options, verify_registration_response, generate_authentication_options, verify_authentication_response, options_to_json, base64url_to_bytes
-from webauthn.helpers.structs import AuthenticatorSelectionCriteria, PublicKeyCredentialDescriptor, UserVerificationRequirement
-import random
-import string
-import sys
+from webauthn import generate_registration_options, verify_registration_response, generate_authentication_options, verify_authentication_response, options_to_json
+from webauthn.helpers.structs import PublicKeyCredentialDescriptor, UserVerificationRequirement
 import secret
+from cryptography.fernet import Fernet
 
 # Variables
 app = Flask(__name__)
 app.secret_key = secret.secret_key
+
+with open("/home/yepssy/code/webauthnnotes/data/secret.key", "rb") as key_file:
+    key = key_file.read()
+
+cipher_suite = Fernet(key)
 
 # Database Connection
 def get_db_connection():
@@ -89,8 +91,8 @@ def register_complete():
     public_key = verification.credential_public_key
     credential_id = verification.credential_id
     
-    query = "INSERT INTO users (username, public_key, credential_id) VALUES (?, ?, ?)"
-    params = (username, public_key, credential_id)
+    query = "INSERT INTO users (username, public_key, credential_id, note) VALUES (?, ?, ?, ?)"
+    params = (username, public_key, credential_id, cipher_suite.encrypt(f"Hello, I'm {username}...".encode()))
     result = execute_query(query, params)
 
     if result[0]:
@@ -109,7 +111,7 @@ def register_complete():
 @app.route('/webauthn/authenticate/begin', methods=['POST'])
 def authenticate_begin():
     data = request.get_json()
-    username = data.get('username')
+    username = data.get('username').strip().lower()
 
     # Verify if the username is already registered
     query = "SELECT credential_id, public_key FROM users WHERE username = ?"
@@ -178,7 +180,7 @@ def logout():
 @app.route('/user-exists', methods=['POST'])
 def user_exists():
     data = request.get_json()
-    username = data.get('username')
+    username = data.get('username').strip().lower()
 
     query = "SELECT * FROM users WHERE username = ?"
     params = (username,)
@@ -206,7 +208,8 @@ def get_note():
     result = execute_query(query, params)
 
     if result[0]:
-        return jsonify({"code": "success", "message": "", "data": {"note": result[1][0][0]}})
+        note = cipher_suite.decrypt(result[1][0][0]).decode()
+        return jsonify({"code": "success", "message": "", "data": {"note": note}})
     else:
         return jsonify({"code": "error", "message": str(result[1]), "data": None})
 
@@ -221,6 +224,8 @@ def set_note():
 
     if not username:
         return jsonify({"code": "error", "message": "User not logged in", "data": None})
+
+    note = cipher_suite.encrypt(note.encode())
 
     # update
     query = "UPDATE users SET note = ? WHERE username = ?"
